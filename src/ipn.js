@@ -32,21 +32,28 @@ module.exports = (function () {
             }
             res.end();
 
-            if(req.body.status < 0) {
-                this.emit('ipn_fail', req.body);
-                return next();
+            if(req.body.ipn_type == 'withdrawal') {
+                if(req.body.status < 0) {
+                    this.emit('ipn_fail', req.body);
+                } else if(req.body.status < 2){
+                    this.emit('ipn_pending', req.body);
+                } else if(req.body.status == 2) {
+                    this.emit('ipn_complete', req.body);
+                }
+            } else {
+                if(req.body.status < 0) {
+                    this.emit('ipn_fail', req.body);
+                } else if(req.body.status < 100){
+                    this.emit('ipn_pending', req.body);
+                } else if(req.body.status == 100) {
+                    this.emit('ipn_complete', req.body);
+                }
             }
-            if(req.body.status < 100){
-                this.emit('ipn_pending', req.body);
-                return next();
-            }
-            if(req.body.status == 100) {
-                this.emit('ipn_complete', req.body);
-                return next();
-            }
+
+            next();
         }
     }
-	
+
     return IPN;
 
 })();
